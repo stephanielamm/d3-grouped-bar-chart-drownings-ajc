@@ -82,7 +82,7 @@ var margin = {top: 45, right: 50, bottom: 40, left: 60},
     height = 475 - margin.top - margin.bottom;
 
 // Parse the date / time
-var	parseDate = d3.time.format("%Y-%m").parse;
+var	parseDate = d3.time.format("%Y").parse;
 
 var x = d3.scale.ordinal().rangeRoundBands([0, width], .1);
 
@@ -96,7 +96,7 @@ var xAxis = d3.svg.axis()
 var yAxis = d3.svg.axis()
     .scale(y)
     .orient("left")
-    .ticks(10);
+    .ticks(5);
 
 var tip = d3.tip()
 		 .attr('class', 'd3-tip')
@@ -106,7 +106,7 @@ var tip = d3.tip()
 			 return result;
 		 })
 		 .html(function(d) {
-		   return "<span style='color:#333333'><strong>Criminal charges: </strong></span><span style='color:#bf653c'>" + d.value + "</span>";
+		   return "<span style='color:#333333'><strong>DNR: </strong></span><span style='color:#bf653c'>" + d.dnr + "</span>";
 		 })
 
 var svg = d3.select("#svgholder").append("svg")
@@ -129,12 +129,12 @@ d3.csv("data.csv", drawChart);
 function drawChart(error, data) {
 
     data.forEach(function(d) {
-        d.date = parseDate(d.date);
-        d.value = +d.value;
+        d.year = parseDate(d.year);
+        d.dnr = +d.dnr;
     });
 
-x.domain(data.map(function(d) { return d.date; }));
-y.domain([0, d3.max(data, function(d) { return d.value; })]);
+x.domain(data.map(function(d) { return d.year; }));
+y.domain([0, d3.max(data, function(d) { return d.dnr; })]);
 
   svg.append("g")
       .attr("class", "x axis")
@@ -165,15 +165,15 @@ y.domain([0, d3.max(data, function(d) { return d.value; })]);
       .attr("y", 6)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
-      .text("Charges");
+      .text("DNR");
 
   svg.selectAll("bar")
       .data(data)
     .enter().append("rect")
-      .attr("x", function(d) { return x(d.date); })
+      .attr("x", function(d) { return x(d.year); })
       .attr("width", x.rangeBand())
-      .attr("y", function(d) { return y(d.value); })
-      .attr("height", function(d) { return height - y(d.value); })
+      .attr("y", function(d) { return y(d.dnr); })
+      .attr("height", function(d) { return height - y(d.dnr); })
 			.on('mouseover', tip.show)
 		  .on('mouseout', tip.hide)
 		 ;

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<head>
+	<style>
+body {
+  font-family: arial;
+}
+.axis {
+	  font: 12px;
+}
+.axis path,
+.axis line {
+	  fill: none;
+	  stroke: #000;
+	  shape-rendering: auto;
+}
+/* Bar colors */
+rect:hover {
+  fill: #bf653c ;
+}
+rect {
+	fill: #304968;
+}
+.d3-tip {
+  line-height: 1;
+  font-weight: bold;
+  padding: 12px;
+  background: white;
+  color: #fff;
+  border-radius: 4px;
+}
+/* Creates a small triangle extender for the tooltip. Code from http://bl.ocks.org/Caged/6476579 */
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: white;
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+/* Style northward tooltips differently. From http://bl.ocks.org/Caged/6476579 */
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+
+.svg-container {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-content-responsive {
+    display: inline-block;
+    position: absolute;
+    top: 10px;
+    left: 0;
+}
+
+	</style>
+</head>
+
+<body>
+
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script src="d3.tip.v0.6.3.js"></script>
+<script type="text/javascript" src="//pym.nprapps.org/pym.v1.min.js"></script>
+	 <div class="svg-container" id="svgholder"></div>
+<script>
+
+var pymChild = new pym.Child({});
+
+var margin = {top: 45, right: 50, bottom: 40, left: 60},
+    width = 515 - margin.left - margin.right,
+    height = 475 - margin.top - margin.bottom;
+
+// Parse the date / time
+var	parseDate = d3.time.format("%Y-%m").parse;
+
+var x = d3.scale.ordinal().rangeRoundBands([0, width], .1);
+
+var y = d3.scale.linear().range([height, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom")
+    .tickFormat(d3.time.format("%Y"));
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .ticks(10);
+
+var tip = d3.tip()
+		 .attr('class', 'd3-tip')
+		 .offset(function(){
+
+			 var result = [-10, 0];
+			 return result;
+		 })
+		 .html(function(d) {
+		   return "<span style='color:#333333'><strong>Criminal charges: </strong></span><span style='color:#bf653c'>" + d.value + "</span>";
+		 })
+
+var svg = d3.select("#svgholder").append("svg")
+	//responsive SVG needs these 2 attributes and no width and height attr
+	.attr("preserveAspectRatio", "xMinYMin meet")
+	.attr("viewBox", "0 0 "+(+width+margin.right+margin.left)+" "+(+height+margin.top+margin.bottom))
+	//class to make it responsive
+	.classed("svg-content-responsive", true)
+    //.attr("width", width + margin.left + margin.right)
+    //.attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+
+svg.call(tip);
+
+d3.csv("data.csv", drawChart);
+
+function drawChart(error, data) {
+
+    data.forEach(function(d) {
+        d.date = parseDate(d.date);
+        d.value = +d.value;
+    });
+
+x.domain(data.map(function(d) { return d.date; }));
+y.domain([0, d3.max(data, function(d) { return d.value; })]);
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+
+
+    .selectAll("text")
+      .style("text-anchor", "end")
+      .attr("dx", ".71em")
+			.attr("dy", ".95em")
+
+	/* source text. Will be added in methode.
+	svg.append("text")
+	        .attr("x", -5 )
+	        .attr("y", 560 )
+	        .style("text-anchor", "left")
+					.style("font-size", 11)
+	        .text("Source: The Georgia Bureau of Investigations. Graphic by Stephanie Lamm/The Atlanta Journal-Constitution.");
+*/
+
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Charges");
+
+  svg.selectAll("bar")
+      .data(data)
+    .enter().append("rect")
+      .attr("x", function(d) { return x(d.date); })
+      .attr("width", x.rangeBand())
+      .attr("y", function(d) { return y(d.value); })
+      .attr("height", function(d) { return height - y(d.value); })
+			.on('mouseover', tip.show)
+		  .on('mouseout', tip.hide)
+		 ;
+
+	pymChild.sendHeight();
+
+}
+
+/* title text. will be added in methode.
+svg.append("text")
+        .attr("x", (width / 2))
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")
+        .style("font-size", "18px")
+        .style("text-decoration", "underline")
+        .text("Charges filed for abuse, neglect and exploitation of at-risk adults in Georgia"); */
+</script>
+
+</body>

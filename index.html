@@ -1,195 +1,125 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
+<style>
+font-family: 'Open Sans', sans-serif;
+}
+#main {
+width: 750px;
+}
+/*
+.axis .domain {
+  display: none;
+}*/
 
-<head>
-	<style>
-body {
-  font-family: arial;
-}
-.axis {
-	  font: 12px;
-}
-.axis path,
-.axis line {
-	  fill: none;
-	  stroke: #000;
-	  shape-rendering: auto;
-}
-/* Bar colors */
-rect:hover {
-  fill: #bf653c ;
-}
-rect {
-	fill: #304968;
-}
-.d3-tip {
-  line-height: 1;
-  font-weight: bold;
-  padding: 12px;
-  background: white;
-  color: #fff;
-  border-radius: 4px;
-}
-/* Creates a small triangle extender for the tooltip. Code from http://bl.ocks.org/Caged/6476579 */
-.d3-tip:after {
-  box-sizing: border-box;
-  display: inline;
-  font-size: 10px;
-  width: 100%;
-  line-height: 1;
-  color: white;
-  content: "\25BC";
-  position: absolute;
-  text-align: center;
-}
-/* Style northward tooltips differently. From http://bl.ocks.org/Caged/6476579 */
-.d3-tip.n:after {
-  margin: -1px 0 0 0;
-  top: 100%;
-  left: 0;
-}
-
-.svg-container {
-    display: inline-block;
-    position: relative;
-    width: 100%;
-    padding-bottom: 100%; /* aspect ratio */
-    vertical-align: top;
-    overflow: hidden;
-}
-.svg-content-responsive {
-    display: inline-block;
-    position: absolute;
-    top: 10px;
-    left: 0;
-}
-
-	</style>
-</head>
-
-<body>
-
-<script src="//d3js.org/d3.v3.min.js"></script>
-<script src="d3.tip.v0.6.3.js"></script>
-<script type="text/javascript" src="//pym.nprapps.org/pym.v1.min.js"></script>
-	 <div class="svg-container" id="svgholder"></div>
+</style>
+<div id="main">
+<svg width="600" height="500"></svg>
+</div>
+<script src="https://d3js.org/d3.v4.min.js"></script>
 <script>
 
-var pymChild = new pym.Child({});
+var svg = d3.select("svg"),
+    margin = {top: 20, right: 80, bottom: 30, left: 40},
+    width = +svg.attr("width") - margin.left - margin.right,
+    height = +svg.attr("height") - margin.top - margin.bottom,
+    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var margin = {top: 45, right: 50, bottom: 40, left: 60},
-    width = 515 - margin.left - margin.right,
-    height = 475 - margin.top - margin.bottom;
+var x0 = d3.scaleBand()
+    .rangeRound([0, width])
+    .paddingInner(0.1)
+  //  .align(0.1);
 
-// Parse the date / time
-var	parseDate = d3.time.format("%Y").parse;
+var x1 = d3.scaleBand()
+    .padding(0.05);
 
-var x = d3.scale.ordinal().rangeRoundBands([0, width], .1);
+var y = d3.scaleLinear()
+    .rangeRound([height, 0]);
 
-var y = d3.scale.linear().range([height, 0]);
+var z = d3.scaleOrdinal()
+    .range(["#98abc5", "#8a89a6"]);
 
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom")
-    .tickFormat(d3.time.format("%Y"));
+d3.csv("data.csv", function(d, i, columns) {
+  for (var i = 1, n = columns.length; i < n; ++i)
+//   for (i = 1, t = 0; i < columns.length; ++i) t +=
+   d[columns[i]] = +d[columns[i]];
+//     d.total = t;
+  return d;
+}, function(error, data) {
+  if (error) throw error;
 
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left")
-    .ticks(5);
+  var keys = data.columns.slice(1);
 
-var tip = d3.tip()
-		 .attr('class', 'd3-tip')
-		 .offset(function(){
+  x0.domain(data.map(function(d) { return d.Year; }));
+  x1.domain(keys).rangeRound([0, x0.bandwidth()]);
+  y.domain([0, d3.max(data, function(d) { return d3.max(keys, function(key) { return d[key]; }); })]).nice();
 
-			 var result = [-10, 0];
-			 return result;
-		 })
-		 .html(function(d) {
-		   return "<span style='color:#333333'><strong>DNR: </strong></span><span style='color:#bf653c'>" + d.dnr + "</span>";
-		 })
-
-var svg = d3.select("#svgholder").append("svg")
-	//responsive SVG needs these 2 attributes and no width and height attr
-	.attr("preserveAspectRatio", "xMinYMin meet")
-	.attr("viewBox", "0 0 "+(+width+margin.right+margin.left)+" "+(+height+margin.top+margin.bottom))
-	//class to make it responsive
-	.classed("svg-content-responsive", true)
-    //.attr("width", width + margin.left + margin.right)
-    //.attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
-
-
-svg.call(tip);
-
-d3.csv("data.csv", drawChart);
-
-function drawChart(error, data) {
-
-    data.forEach(function(d) {
-        d.year = parseDate(d.year);
-        d.dnr = +d.dnr;
-    });
-
-x.domain(data.map(function(d) { return d.year; }));
-y.domain([0, d3.max(data, function(d) { return d.dnr; })]);
-
-  svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis)
-
-
-    .selectAll("text")
-      .style("text-anchor", "end")
-      .attr("dx", ".71em")
-			.attr("dy", ".95em")
-
-	/* source text. Will be added in methode.
-	svg.append("text")
-	        .attr("x", -5 )
-	        .attr("y", 560 )
-	        .style("text-anchor", "left")
-					.style("font-size", 11)
-	        .text("Source: The Georgia Bureau of Investigations. Graphic by Stephanie Lamm/The Atlanta Journal-Constitution.");
-*/
-
-
-  svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
-    .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("DNR");
-
-  svg.selectAll("bar")
-      .data(data)
+  g.append("g")
+    .selectAll("g")
+    .data(data)
+    .enter().append("g")
+      .attr("transform", function(d) { return "translate(" + x0(d.Year) + ",0)"; })
+    .selectAll("rect")
+    .data(function(d) { return keys.map(function(key) { return {key: key, value: d[key]}; }); })
     .enter().append("rect")
-      .attr("x", function(d) { return x(d.year); })
-      .attr("width", x.rangeBand())
-      .attr("y", function(d) { return y(d.dnr); })
-      .attr("height", function(d) { return height - y(d.dnr); })
-			.on('mouseover', tip.show)
-		  .on('mouseout', tip.hide)
-		 ;
+      .attr("x", function(d) { return x1(d.key); })
+      .attr("y", function(d) { return y(d.value); })
+      .attr("width", x1.bandwidth())
+      .attr("height", function(d) { return height - y(d.value); })
+      .attr("fill", function(d) { return z(d.key); });
 
-	pymChild.sendHeight();
+  g.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x0));
 
-}
+  g.append("g")
+      .attr("class", "axis")
+      .call(d3.axisLeft(y).ticks(null, "s"))
+    .append("text")
+      .attr("x", 2)
+      .attr("y", y(y.ticks().pop()) + 0.5)
+      .attr("dy", "0.32em")
+      .attr("fill", "#000")
+      .attr("font-weight", "bold")
+      .attr("text-anchor", "start")
+      .text("Drownings");
 
-/* title text. will be added in methode.
-svg.append("text")
-        .attr("x", (width / 2))
-        .attr("y", 0 - (margin.top / 2))
-        .attr("text-anchor", "middle")
-        .style("font-size", "18px")
-        .style("text-decoration", "underline")
-        .text("Charges filed for abuse, neglect and exploitation of at-risk adults in Georgia"); */
+  var legend = g.append("g")
+      .attr("font-family", "sans-serif")
+      .attr("font-size", 12)
+      .attr("text-anchor", "end")
+    .selectAll("g")
+    .data(keys.slice().reverse())
+    .enter().append("g")
+      .attr("transform", function(d, i) { return "translate(80," + i * 20 + ")"; });
+
+  legend.append("rect")
+      .attr("x", width - 19)
+      .attr("width", 19)
+      .attr("height", 19)
+      .attr("fill", z);
+
+  legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 9.5)
+      .attr("dy", "0.32em")
+      .text(function(d) { return d; });
+});
+// Prep the tooltip bits, initial display is hidden
+var tooltip = svg.append("g")
+  .attr("class", "tooltip")
+  .style("display", "none");
+
+tooltip.append("rect")
+  .attr("width", 60)
+  .attr("height", 20)
+  .attr("fill", "white")
+  .style("opacity", 0.5);
+
+tooltip.append("text")
+  .attr("x", 30)
+  .attr("dy", "1.2em")
+  .style("text-anchor", "middle")
+  .attr("font-size", "14px")
+  .attr("font-weight", "bold");
+
 </script>
-
-</body>

@@ -1,18 +1,36 @@
 <!DOCTYPE html>
+
+<head>
+  <link rel="stylesheet" href="/css/master.css">
+</head>
 <style>
-body {
-font-family: 'Open Sans', sans-serif;
-}
-#main {
-width: 750px;
-}
-/*
-.axis .domain {
-  display: none;
-}*/
+  body {
+    font-family: 'Open Sans', sans-serif;
+  }
+  #main {
+    width: 750px;
+  }
+
+  .infotip {
+    position: absolute;
+    opacity: 0;
+    background-color: white;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+
+  .axis .domain {
+    display: none;
+  }
+
 </style>
 <div id="main">
-<svg width="600" height="500"></svg>
+  <svg width="600" height="500"></svg>
+</div>
+
+<div class="infotip">
+
 </div>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script>
@@ -37,11 +55,11 @@ var y = d3.scaleLinear()
 var z = d3.scaleOrdinal()
     .range(["#98abc5", "#8a89a6"]);
 
+var tooltip = d3.select(".infotip");
+
 d3.csv("data.csv", function(d, i, columns) {
   for (var i = 1, n = columns.length; i < n; ++i)
-//   for (i = 1, t = 0; i < columns.length; ++i) t +=
    d[columns[i]] = +d[columns[i]];
-//     d.total = t;
   return d;
 }, function(error, data) {
   if (error) throw error;
@@ -52,10 +70,12 @@ d3.csv("data.csv", function(d, i, columns) {
   x1.domain(keys).rangeRound([0, x0.bandwidth()]);
   y.domain([0, d3.max(data, function(d) { return d3.max(keys, function(key) { return d[key]; }); })]).nice();
 
-  g.append("g")
+  var barJoin = g.append("g")
     .selectAll("g")
     .data(data)
-    .enter().append("g")
+
+
+var barEnter = barJoin.enter().append("g")
       .attr("transform", function(d) { return "translate(" + x0(d.Year) + ",0)"; })
     .selectAll("rect")
     .data(function(d) { return keys.map(function(key) { return {key: key, value: d[key]}; }); })
@@ -66,16 +86,23 @@ d3.csv("data.csv", function(d, i, columns) {
       .attr("height", function(d) { return height - y(d.value); })
       .attr("fill", function(d) { return z(d.key)})
     // tooltip begins
-    .on("mouseover", function() {
-      tooltip.style("display", null); })
+    // .on("mouseover", function() {
+    //   tooltip.style("display", null); })
     .on("mouseout", function() {
-      tooltip.style("display", "none"); })
+      tooltip.style("opacity", 0); })
     .on("mousemove", function(d) {
-        console.log(d);
-        var xPosition = d3.mouse(this)[0] - 5;
-        var yPosition = d3.mouse(this)[1] - 5;
-        tooltip.attr("transform", "translate(" + xPosition + ","+ yPosition + ")");
-        tooltip.select("text").text(d[1]-d[0]);
+        console.log(d3.select(this));
+        var xPosition = d3.event.pageX - 15;
+        var yPosition = d3.event.pageY - 25;
+
+        tooltip
+          .style('left', xPosition + 'px')
+          .style('top', yPosition + 'px')
+          .style('opacity', 1)
+          .text(d.value)
+
+        // tooltip.attr("transform", "translate(" + xPosition + ","+ yPosition + ")");
+        // tooltip.select("text").text(d[1]-d[0]);
       });
 
   g.append("g")
@@ -117,9 +144,6 @@ d3.csv("data.csv", function(d, i, columns) {
       .text(function(d) { return d; });
 });
 // Prep the tooltip bits, initial display is hidden
-var tooltip = svg.append("g")
-  .attr("class", "tooltip")
-  .style("display", "none");
 
 tooltip.append("rect")
   .attr("width", 60)

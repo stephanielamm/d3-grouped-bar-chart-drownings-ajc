@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 
 <head>
-  <link rel="stylesheet" href="/css/master.css">
 </head>
 <style>
   body {
@@ -14,9 +13,12 @@
   .infotip {
     position: absolute;
     opacity: 0;
-    background-color: white;
+    background-color: rgba(255,255,255, 0.5);
     font-size: 14px;
     font-weight: bold;
+    width: 60px;
+    padding: 5px 0;
+    text-align: center;
   }
 
 
@@ -55,6 +57,7 @@ var y = d3.scaleLinear()
 var z = d3.scaleOrdinal()
     .range(["#98abc5", "#8a89a6"]);
 
+// svg tooltip was not working with this grouped chart
 var tooltip = d3.select(".infotip");
 
 d3.csv("data.csv", function(d, i, columns) {
@@ -90,7 +93,7 @@ var barEnter = barJoin.enter().append("g")
     .on("mousemove", function(d) {
         console.log(d3.select(this));
         var xPosition = d3.event.pageX - 15;
-        var yPosition = d3.event.pageY - 25;
+        var yPosition = d3.event.pageY - 35;
 
         tooltip
           .style('left', xPosition + 'px')

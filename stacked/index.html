@@ -111,7 +111,7 @@ d3.csv("data.csv", function(d, i, columns) {
       .text(function(d) { return d; });
 });
 
-  // Prep the tooltip bits, initial display is hidden
+  // svg tooltip for some reason works better here 
   var tooltip = svg.append("g")
     .attr("class", "tooltip")
     .style("display", "none");

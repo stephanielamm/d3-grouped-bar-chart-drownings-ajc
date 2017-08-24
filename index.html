@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <style>
+body {
 font-family: 'Open Sans', sans-serif;
 }
 #main {
@@ -9,7 +10,6 @@ width: 750px;
 .axis .domain {
   display: none;
 }*/
-
 </style>
 <div id="main">
 <svg width="600" height="500"></svg>
@@ -65,15 +65,16 @@ d3.csv("data.csv", function(d, i, columns) {
       .attr("width", x1.bandwidth())
       .attr("height", function(d) { return height - y(d.value); })
       .attr("fill", function(d) { return z(d.key)})
+    // tooltip begins
     .on("mouseover", function() {
       tooltip.style("display", null); })
     .on("mouseout", function() {
       tooltip.style("display", "none"); })
     .on("mousemove", function(d) {
-  //      console.log(d);
+        console.log(d);
         var xPosition = d3.mouse(this)[0] - 5;
         var yPosition = d3.mouse(this)[1] - 5;
-        tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
+        tooltip.attr("transform", "translate(" + xPosition + ","+ yPosition + ")");
         tooltip.select("text").text(d[1]-d[0]);
       });
 

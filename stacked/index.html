@@ -14,7 +14,10 @@ body {
 <svg width="600" height="500"></svg>
 </div>
 <script src="https://d3js.org/d3.v4.min.js"></script>
+<script type="text/javascript" src="//pym.nprapps.org/pym.v1.min.js"></script>
 <script>
+var pymChild = new pym.Child({});
+
 // create the svg
 var svg = d3.select("svg"),
     margin = {top: 20, right: 80, bottom: 30, left: 40},
@@ -128,5 +131,8 @@ d3.csv("data.csv", function(d, i, columns) {
     .style("text-anchor", "middle")
     .attr("font-size", "14px")
     .attr("font-weight", "bold");
+
+    pymChild.sendHeight();
+
 
 </script>

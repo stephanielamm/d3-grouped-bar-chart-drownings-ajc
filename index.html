@@ -85,9 +85,6 @@ var barEnter = barJoin.enter().append("g")
       .attr("width", x1.bandwidth())
       .attr("height", function(d) { return height - y(d.value); })
       .attr("fill", function(d) { return z(d.key)})
-    // tooltip begins
-    // .on("mouseover", function() {
-    //   tooltip.style("display", null); })
     .on("mouseout", function() {
       tooltip.style("opacity", 0); })
     .on("mousemove", function(d) {
@@ -100,9 +97,6 @@ var barEnter = barJoin.enter().append("g")
           .style('top', yPosition + 'px')
           .style('opacity', 1)
           .text(d.value)
-
-        // tooltip.attr("transform", "translate(" + xPosition + ","+ yPosition + ")");
-        // tooltip.select("text").text(d[1]-d[0]);
       });
 
   g.append("g")
@@ -143,20 +137,5 @@ var barEnter = barJoin.enter().append("g")
       .attr("dy", "0.32em")
       .text(function(d) { return d; });
 });
-// Prep the tooltip bits, initial display is hidden
-
-tooltip.append("rect")
-  .attr("width", 60)
-  .attr("height", 20)
-  .attr("fill", "white")
-  .style("opacity", 0.5);
-
-tooltip.append("text")
-  .attr("x0", 30)
-  .attr("x1", 30)
-  .attr("dy", "1.2em")
-  .style("text-anchor", "middle")
-  .attr("font-size", "14px")
-  .attr("font-weight", "bold");
 
 </script>

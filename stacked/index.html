@@ -5,6 +5,7 @@ body {
 }
 #main {
   width: 750px;
+  height: 600px;
 }
 .axis .domain {
   display: none;
@@ -37,8 +38,8 @@ var y = d3.scaleLinear()
 
 // set the colors
 var z = d3.scaleOrdinal()
-    .range(["#98abc5", "#8a89a6"]);
-
+  .range(["#80ADDE", "#7374A6"]);
+  
 // load the csv and create the chart
 d3.csv("data.csv", function(d, i, columns) {
   for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];

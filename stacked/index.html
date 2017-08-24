@@ -6,9 +6,9 @@ body {
 #main {
   width: 750px;
 }
-/*.axis .domain {
+.axis .domain {
   display: none;
-}*/
+}
 </style>
 <div id="main">
 <svg width="600" height="500"></svg>
@@ -111,7 +111,7 @@ d3.csv("data.csv", function(d, i, columns) {
       .text(function(d) { return d; });
 });
 
-  // svg tooltip for some reason works better here 
+  // svg tooltip for some reason works better here
   var tooltip = svg.append("g")
     .attr("class", "tooltip")
     .style("display", "none");
